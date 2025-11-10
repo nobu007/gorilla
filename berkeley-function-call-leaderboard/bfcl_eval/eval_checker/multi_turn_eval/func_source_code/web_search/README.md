@@ -56,6 +56,11 @@ results = api.search_engine_query(
 )
 
 results = api.search_engine_query(
+    "artificial intelligence",
+    backend="youcom"
+)
+
+results = api.search_engine_query(
     "deep learning",
     backend="duckduckgo",
     use_proxy=True
@@ -101,6 +106,11 @@ results = api.search_with_fallback(
 export SERPAPI_API_KEY="your_serpapi_key"
 ```
 
+### You.com API (Optional)
+```bash
+export YDC_API_KEY="your_youcom_api_key"
+```
+
 ### Brightdata Proxy (Optional)
 ```bash
 export BRIGHTDATA_HOST="brd.superproxy.io"
@@ -124,6 +134,13 @@ export BRIGHTDATA_PASSWORD="your_password"
    - Requires API key
    - Higher reliability
    - Handles rate limiting
+
+3. **YouComBackend**
+   - You.com search API integration
+   - Requires YDC_API_KEY
+   - High-quality web and news results
+   - No rate limiting issues
+   - Fast response times
 
 ### Creating Custom Backends
 

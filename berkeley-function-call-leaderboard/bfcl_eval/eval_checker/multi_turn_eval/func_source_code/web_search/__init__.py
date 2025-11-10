@@ -24,7 +24,7 @@ Example usage:
 
 from .api import WebSearchAPI
 from .config import SearchConfig
-from .backends import SearchBackend, DuckDuckGoBackend, SerpApiBackend
+from .backends import SearchBackend, DuckDuckGoBackend, SerpApiBackend, YouComBackend
 from .__version__ import __version__
 
 # Legacy imports for backward compatibility
@@ -38,6 +38,7 @@ __all__ = [
     "SearchBackend",
     "DuckDuckGoBackend",
     "SerpApiBackend",
+    "YouComBackend",
     # Legacy
     "fetch_url_content",
     # Package info

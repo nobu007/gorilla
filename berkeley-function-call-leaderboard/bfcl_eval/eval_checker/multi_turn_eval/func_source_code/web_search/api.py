@@ -72,10 +72,14 @@ class WebSearchAPI:
         if self.config.preferred_backend and self.config.preferred_backend in self.backends:
             return self.backends[self.config.preferred_backend]
 
-        # Smart fallback: prefer SerpAPI if available, otherwise DuckDuckGo
+        # Smart fallback: prefer SerpAPI > You.com > DuckDuckGo
         if "serpapi" in self.backends and self.backends["serpapi"].is_available():
             print("[WebSearchAPI] Using SerpAPI backend (auto-detected)")
             return self.backends["serpapi"]
+
+        if "youcom" in self.backends and self.backends["youcom"].is_available():
+            print("[WebSearchAPI] Using You.com backend (auto-detected)")
+            return self.backends["youcom"]
 
         # Default to DuckDuckGo
         if "duckduckgo" in self.backends:
@@ -123,8 +127,9 @@ class WebSearchAPI:
                 - For DuckDuckGo: Enables Brightdata residential proxy
                 - For SerpAPI: Ignored (SerpAPI handles its own routing)
             backend (str, optional): The search backend to use.
-                - None (default): Auto-select (SerpAPI if available, otherwise DuckDuckGo)
+                - None (default): Auto-select (SerpAPI > You.com > DuckDuckGo priority)
                 - "serpapi": Force SerpAPI (will fail if API key not available)
+                - "youcom": Force You.com (requires YDC_API_KEY)
                 - "duckduckgo": Force DuckDuckGo (with optional proxy support)
 
         Returns:
@@ -147,8 +152,17 @@ class WebSearchAPI:
             api.print_backend_status()
         """
         try:
-            # Select backend
-            selected_backend = self._select_backend(backend)
+            # Check if explicitly requested backend is available
+            if backend:
+                # Explicit backend requested
+                if backend not in self.backends:
+                    return {"error": f"Backend '{backend}' is not available. Check configuration."}
+                selected_backend = self.backends[backend]
+                if not selected_backend.is_available():
+                    return {"error": f"Backend '{backend}' is not available. Check API key configuration."}
+            else:
+                # Auto-selection logic for when no specific backend is requested
+                selected_backend = self._select_backend(backend)
 
             # Prepare search parameters
             search_params = {
@@ -174,7 +188,7 @@ class WebSearchAPI:
             # Execute search
             result = selected_backend.search(**search_params)
 
-            # Handle fallback logic
+            # Handle fallback logic only when no specific backend was requested
             if "error" in result and self.config.enable_fallback and backend is None:
                 # Try the next available backend
                 available_backends = [b for b in self.backends.values() if b.is_available() and b != selected_backend]
