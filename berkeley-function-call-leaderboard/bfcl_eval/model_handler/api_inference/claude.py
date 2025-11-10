@@ -78,7 +78,7 @@ class ClaudeHandler(BaseHandler):
 
     #### FC methods ####
 
-    def _query_FC(self, inference_data: dict):
+    def _query_FC_impl(self, inference_data: dict):
         inference_data["inference_input_log"] = {
             "message": repr(inference_data["message"]),
             "tools": inference_data["tools"],
@@ -233,7 +233,7 @@ class ClaudeHandler(BaseHandler):
 
     #### Prompting methods ####
 
-    def _query_prompting(self, inference_data: dict):
+    def _query_prompting_impl(self, inference_data: dict):
         inference_data["inference_input_log"] = {
             "message": repr(inference_data["message"]),
             "system_prompt": inference_data["system_prompt"],
