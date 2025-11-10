@@ -62,6 +62,12 @@ class GLMHandler(OSSHandler):
         if len(args) == 1:
             func = args[0]
         elif len(args) >= 2:
-            func = [{args[0]: args[1]}]
+            try:
+                # Try to parse the second argument as JSON
+                parsed_args = json.loads(args[1])
+                func = [{args[0]: parsed_args}]
+            except json.JSONDecodeError:
+                # If JSON parsing fails, keep it as a string
+                func = [{args[0]: args[1]}]
 
         return convert_to_function_call(func)
