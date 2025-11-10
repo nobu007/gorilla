@@ -2,6 +2,23 @@
 
 All notable changes to the Web Search API will be documented in this file.
 
+## [2.1.0] - 2024-11-10
+
+### 🎉 New Features
+- **Added You.com Backend**: Implemented YouComBackend with YDC API integration
+- **Enhanced Auto-Selection**: Backend priority updated to SerpAPI > You.com > DuckDuckGo
+- **Extended Configuration**: Added support for YDC_API_KEY environment variable
+- **New Test Coverage**: Added comprehensive tests for You.com backend functionality
+- **API Priority Logic**: Smart backend selection with You.com as preferred second choice
+
+### 🔧 Improvements
+- **API Integration**: Full support for You.com search and live crawl endpoints
+- **Result Processing**: Combined web and news results from You.com API
+- **Error Handling**: Robust error handling for You.com API failures
+- **Documentation**: Updated README with You.com configuration and usage examples
+
+---
+
 ## [2.0.0] - 2024-11-10
 
 ### 🎉 Major Refactoring

@@ -44,7 +44,11 @@ class SearchConfig:
         self.show_snippet = self.config.get("show_snippet", True)
 
         # Backend preferences
-        self.preferred_backend = self.config.get("preferred_backend", None)
+        # Environment variable takes precedence over config file
+        self.preferred_backend = (
+            os.getenv("WEB_SEARCH_PREFERRED_BACKEND") or
+            self.config.get("preferred_backend", None)
+        )
         self.enable_fallback = self.config.get("enable_fallback", True)
 
     def get_available_backends(self) -> List[str]:

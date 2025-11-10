@@ -222,6 +222,31 @@ class TestSearchConfig(unittest.TestCase):
         self.assertIsNone(config.preferred_backend)
         self.assertTrue(config.enable_fallback)
 
+    def test_environment_preferred_backend(self):
+        """Test preferred backend selection from environment variable."""
+        self.env_manager.set("WEB_SEARCH_PREFERRED_BACKEND", "duckduckgo")
+
+        config = SearchConfig()
+        self.assertEqual(config.preferred_backend, "duckduckgo")
+
+    def test_environment_preferred_backend_overrides_config(self):
+        """Test that environment variable overrides config file setting."""
+        self.env_manager.set("WEB_SEARCH_PREFERRED_BACKEND", "youcom")
+
+        config_dict = {"preferred_backend": "serpapi"}
+        config = SearchConfig(config_dict)
+
+        # Environment should take precedence over config
+        self.assertEqual(config.preferred_backend, "youcom")
+
+    def test_environment_preferred_backend_invalid(self):
+        """Test handling of invalid preferred backend in environment."""
+        self.env_manager.set("WEB_SEARCH_PREFERRED_BACKEND", "invalid_backend")
+
+        config = SearchConfig()
+        # Should still be set to invalid value (validation happens at runtime)
+        self.assertEqual(config.preferred_backend, "invalid_backend")
+
     def test_config_preservation(self):
         """Test that original config dict is not modified."""
         original_config = {

@@ -362,6 +362,37 @@ class TestWebSearchAPI(unittest.TestCase):
         self.assertEqual(call_args[1]['params']['q'], "test query")
         self.assertEqual(call_args[1]['timeout'], 15)
 
+    @patch('requests.get')
+    def test_environment_preferred_backend_selection(self, mock_get):
+        """Test that environment variable for preferred backend works."""
+        mock_response = Mock()
+        mock_response.text = """
+        <div class="result">
+            <a class="result__a" href="https://example.com">Test Result</a>
+            <a class="result__snippet">Test snippet</a>
+        </div>
+        """
+        mock_response.raise_for_status.return_value = None
+        mock_get.return_value = mock_response
+
+        # Set preferred backend via environment
+        self.env_manager.set("WEB_SEARCH_PREFERRED_BACKEND", "duckduckgo")
+
+        api = WebSearchAPI()
+
+        # Verify that the preferred backend was set from environment
+        self.assertEqual(api.config.preferred_backend, "duckduckgo")
+
+        # Test that the preferred backend is actually used
+        result = api.search_engine_query(
+            keywords="test query",
+            max_results=5,
+            region="us-en"
+        )
+
+        self.assertIsInstance(result, list)
+        mock_get.assert_called_once()
+
 
 if __name__ == '__main__':
     unittest.main()
