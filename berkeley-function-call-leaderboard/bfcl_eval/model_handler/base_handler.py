@@ -282,12 +282,33 @@ class BaseHandler:
                         break
 
                 except Exception as e:
-                    print("Failed to decode the model response. Proceed to next turn.")
+                    import traceback
+
+                    # Enhanced debugging information
+                    error_details = {
+                        "error_type": type(e).__name__,
+                        "error_message": str(e),
+                        "traceback": traceback.format_exc(),
+                    }
+
+                    # Add model response details if available
+                    if hasattr(self, '_last_model_response'):
+                        error_details["model_response"] = self._last_model_response
+                        error_details["model_response_preview"] = str(self._last_model_response)[:500] + "..." if len(str(self._last_model_response)) > 500 else str(self._last_model_response)
+
+                    # Only show detailed debug output if verbose_errors is enabled
+                    if hasattr(self, 'verbose_errors') and self.verbose_errors:
+                        print(f"[DEBUG] Failed to decode model response for {self.model_name}:")
+                        print(f"  Error Type: {error_details['error_type']}")
+                        print(f"  Error Message: {error_details['error_message']}")
+                        if "model_response_preview" in error_details:
+                            print(f"  Model Response Preview: {error_details['model_response_preview']}")
+
                     current_step_inference_log.append(
                         {
                             "role": "handler_log",
                             "content": f"Error decoding the model response. Proceed to next turn.",
-                            "error": str(e),
+                            "error": error_details,
                         }
                     )
                     break
@@ -574,12 +595,33 @@ class BaseHandler:
                         break
 
                 except Exception as e:
-                    print("Failed to decode the model response. Proceed to next turn.")
+                    import traceback
+
+                    # Enhanced debugging information
+                    error_details = {
+                        "error_type": type(e).__name__,
+                        "error_message": str(e),
+                        "traceback": traceback.format_exc(),
+                    }
+
+                    # Add model response details if available
+                    if hasattr(self, '_last_model_response'):
+                        error_details["model_response"] = self._last_model_response
+                        error_details["model_response_preview"] = str(self._last_model_response)[:500] + "..." if len(str(self._last_model_response)) > 500 else str(self._last_model_response)
+
+                    # Only show detailed debug output if verbose_errors is enabled
+                    if hasattr(self, 'verbose_errors') and self.verbose_errors:
+                        print(f"[DEBUG] Failed to decode model response for {self.model_name}:")
+                        print(f"  Error Type: {error_details['error_type']}")
+                        print(f"  Error Message: {error_details['error_message']}")
+                        if "model_response_preview" in error_details:
+                            print(f"  Model Response Preview: {error_details['model_response_preview']}")
+
                     current_step_inference_log.append(
                         {
                             "role": "handler_log",
                             "content": f"Error decoding the model response. Proceed to next turn.",
-                            "error": str(e),
+                            "error": error_details,
                         }
                     )
                     break
@@ -827,6 +869,16 @@ class BaseHandler:
         Call the model API in FC mode to get the response.
         Return the response object that can be used to feed into the `_parse_query_response_FC` method.
         """
+        result = self._query_FC_impl(inference_data)
+        # Store the response for debugging purposes
+        self._last_model_response = result
+        return result
+
+    def _query_FC_impl(self, inference_data: dict):
+        """
+        Implementation of _query_FC to be overridden by subclasses.
+        This is where the actual API call happens.
+        """
         raise NotImplementedError
 
     def _pre_query_processing_FC(self, inference_data: dict, test_entry: dict) -> dict:
@@ -916,6 +968,16 @@ class BaseHandler:
         """
         Call the model API in prompting mode to get the response.
         Return the response object that can be used to feed into the decode method.
+        """
+        result = self._query_prompting_impl(inference_data)
+        # Store the response for debugging purposes
+        self._last_model_response = result
+        return result
+
+    def _query_prompting_impl(self, inference_data: dict):
+        """
+        Implementation of _query_prompting to be overridden by subclasses.
+        This is where the actual API call happens.
         """
         raise NotImplementedError
 

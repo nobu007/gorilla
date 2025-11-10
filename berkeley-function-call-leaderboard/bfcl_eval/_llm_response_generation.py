@@ -44,6 +44,7 @@ def get_args():
     parser.add_argument("--result-dir", default=None, type=str)
     parser.add_argument("--run-ids", action="store_true", default=False)
     parser.add_argument("--allow-overwrite", "-o", action="store_true", default=False)
+    parser.add_argument("--verbose-errors", action="store_true", default=False)
     parser.add_argument(
         "--skip-server-setup",
         action="store_true",
@@ -62,13 +63,14 @@ def get_args():
     return args
 
 
-def build_handler(model_name, temperature):
+def build_handler(model_name, temperature, verbose_errors=False):
     config = MODEL_CONFIG_MAPPING[model_name]
     handler = config.model_handler(
         model_name=config.model_name,
         temperature=temperature,
         registry_name=model_name,
         is_fc_model=config.is_fc_model,
+        verbose_errors=verbose_errors,
     )
     return handler
 
@@ -202,7 +204,7 @@ def multi_threaded_inference(handler, test_case, include_input_log, exclude_stat
 
 
 def generate_results(args, model_name, test_cases_total):
-    handler = build_handler(model_name, args.temperature)
+    handler = build_handler(model_name, args.temperature, args.verbose_errors)
 
     if isinstance(handler, OSSHandler):
         handler: OSSHandler
