@@ -38,16 +38,28 @@ class OpenAICompletionsHandler(BaseHandler):
 
         kwargs = {}
 
-        if api_key := os.getenv("OPENAI_API_KEY"):
+        # Allow subclasses to override which API key to use
+        api_key = self._get_api_key()
+        if api_key:
             kwargs["api_key"] = api_key
 
-        if base_url := os.getenv("OPENAI_BASE_URL"):
+        # Allow subclasses to override which base URL to use
+        base_url = self._get_base_url()
+        if base_url:
             kwargs["base_url"] = base_url
 
         if headers_env := os.getenv("OPENAI_DEFAULT_HEADERS"):
             kwargs["default_headers"] = json.loads(headers_env)
 
         return kwargs
+
+    def _get_api_key(self):
+        """Get the API key. Subclasses can override this to use different environment variables."""
+        return os.getenv("OPENAI_API_KEY")
+
+    def _get_base_url(self):
+        """Get the base URL. Subclasses can override this to use different environment variables."""
+        return os.getenv("OPENAI_BASE_URL")
 
     def decode_ast(self, result, language, has_tool_call_tag):
         if self.is_fc_model:
