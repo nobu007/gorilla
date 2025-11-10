@@ -75,7 +75,10 @@ class OpenAICompletionsHandler(BaseHandler):
     def decode_execute(self, result, has_tool_call_tag):
         if self.is_fc_model:
             # Ensure result is in the expected format for convert_to_function_call
-            if isinstance(result, str):
+            # Handle None or empty responses
+            if result is None or (isinstance(result, str) and result.strip() == ""):
+                result = []
+            elif isinstance(result, str):
                 try:
                     parsed_result = json.loads(result)
                     # Ensure it's a list or dict

@@ -218,7 +218,15 @@ def convert_to_function_call(function_call_list):
     for function_call in function_call_list:
         for key, value in function_call.items():
             if type(value) == str:
-                value = json.loads(value)
+                # Handle empty strings
+                if value.strip() == "":
+                    value = {}
+                else:
+                    try:
+                        value = json.loads(value)
+                    except json.JSONDecodeError:
+                        # If JSON parsing fails, treat as empty dict
+                        value = {}
             execution_list.append(
                 f"{key}({','.join([f'{k}={repr(v)}' for k,v in value.items()])})"
             )
