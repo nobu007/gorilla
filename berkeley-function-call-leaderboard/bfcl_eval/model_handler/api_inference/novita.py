@@ -16,10 +16,20 @@ class NovitaHandler(OpenAICompletionsHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.NOVITA_AI
-        self.client = OpenAI(
-            base_url="https://api.novita.ai/v3/openai",
-            api_key=os.getenv("NOVITA_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use Novita API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Novita API key
+        api_key = os.getenv("NOVITA_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Novita base URL
+        kwargs["base_url"] = "https://api.novita.ai/v3/openai"
+
+        return kwargs
 
     #### FC methods ####
 

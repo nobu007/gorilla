@@ -18,10 +18,20 @@ class GrokHandler(OpenAICompletionsHandler):
         **kwargs,
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
-        self.client = OpenAI(
-            base_url="https://api.x.ai/v1",
-            api_key=os.getenv("GROK_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use Grok API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Grok API key
+        api_key = os.getenv("GROK_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Grok base URL
+        kwargs["base_url"] = "https://api.x.ai/v1"
+
+        return kwargs
 
     @override
     def _parse_query_response_prompting(self, api_response: Any) -> dict:

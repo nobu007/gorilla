@@ -27,8 +27,20 @@ class LingAPIHandler(OpenAICompletionsHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
-        api_url = "https://bailingchat.alipay.com"
-        self.client = OpenAI(base_url=api_url, api_key=os.getenv("LING_API_KEY"))
+
+    def _build_client_kwargs(self):
+        """Override to use Ling API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Ling API key
+        api_key = os.getenv("LING_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Ling base URL
+        kwargs["base_url"] = "https://bailingchat.alipay.com"
+
+        return kwargs
 
     @retry_with_backoff(error_type=[RateLimitError, json.JSONDecodeError])
     def generate_with_backoff(self, **kwargs):

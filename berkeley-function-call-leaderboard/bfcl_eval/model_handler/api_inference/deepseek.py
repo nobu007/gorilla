@@ -27,6 +27,22 @@ class DeepSeekAPIHandler(OpenAICompletionsHandler):
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
 
+    def _build_client_kwargs(self):
+        """Override to use DeepSeek API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use DeepSeek API key
+        api_key = self._get_api_key()
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use DeepSeek base URL
+        base_url = self._get_base_url()
+        if base_url:
+            kwargs["base_url"] = base_url
+
+        return kwargs
+
     def _get_api_key(self):
         """Use DeepSeek API key instead of OpenAI API key."""
         return os.getenv("DEEPSEEK_API_KEY")

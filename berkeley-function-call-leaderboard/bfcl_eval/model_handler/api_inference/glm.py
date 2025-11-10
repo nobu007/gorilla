@@ -1,6 +1,7 @@
 import os
 
 from bfcl_eval.model_handler.api_inference.openai_completion import OpenAICompletionsHandler
+from bfcl_eval.constants.enums import ModelStyle
 from openai import OpenAI
 import httpx
 
@@ -15,12 +16,25 @@ class GLMAPIHandler(OpenAICompletionsHandler):
         **kwargs,
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
-        # Override client with custom timeout
-        self.client = OpenAI(
-            api_key=self._get_api_key(),
-            base_url=self._get_base_url(),
-            timeout=httpx.Timeout(timeout=300.0, connect=8.0),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use GLM API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use GLM API key
+        api_key = self._get_api_key()
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use GLM base URL
+        base_url = self._get_base_url()
+        if base_url:
+            kwargs["base_url"] = base_url
+
+        # Set custom timeout
+        kwargs["timeout"] = httpx.Timeout(timeout=300.0, connect=8.0)
+
+        return kwargs
 
     def _get_api_key(self):
         """Use GLM API key instead of OpenAI API key."""

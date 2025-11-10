@@ -16,4 +16,14 @@ class FunctionaryHandler(OpenAICompletionsHandler):
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
 
-        self.client = OpenAI(base_url="http://localhost:8000/v1", api_key="functionary")
+    def _build_client_kwargs(self):
+        """Override to use Functionary API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Functionary uses a fixed API key
+        kwargs["api_key"] = "functionary"
+
+        # Use Functionary base URL
+        kwargs["base_url"] = "http://localhost:8000/v1"
+
+        return kwargs

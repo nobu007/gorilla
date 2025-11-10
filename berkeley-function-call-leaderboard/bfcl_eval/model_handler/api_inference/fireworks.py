@@ -21,10 +21,19 @@ class FireworksHandler(OpenAICompletionsHandler):
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.FIREWORK_AI
 
-        self.client = OpenAI(
-            base_url="https://api.fireworks.ai/inference/v1",
-            api_key=os.getenv("FIREWORKS_API_KEY"),
-        )
+    def _build_client_kwargs(self):
+        """Override to use Fireworks API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Fireworks API key
+        api_key = os.getenv("FIREWORKS_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Fireworks base URL
+        kwargs["base_url"] = "https://api.fireworks.ai/inference/v1"
+
+        return kwargs
 
     #### FC methods ####
 

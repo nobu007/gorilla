@@ -27,10 +27,28 @@ class QwenAPIHandler(OpenAICompletionsHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
-        self.client = OpenAI(
-            base_url="https://dashscope.aliyuncs.com/compatible-mode/v1",
-            api_key=os.getenv("QWEN_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use Qwen API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Qwen API key
+        api_key = os.getenv("QWEN_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Qwen base URL
+        kwargs["base_url"] = "https://dashscope.aliyuncs.com/compatible-mode/v1"
+
+        return kwargs
+
+    def _get_api_key(self):
+        """Use Qwen API key instead of OpenAI API key."""
+        return os.getenv("QWEN_API_KEY")
+
+    def _get_base_url(self):
+        """Use Qwen base URL instead of OpenAI base URL."""
+        return "https://dashscope.aliyuncs.com/compatible-mode/v1"
 
     #### FC methods ####
 

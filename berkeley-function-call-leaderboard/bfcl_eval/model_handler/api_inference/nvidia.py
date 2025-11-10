@@ -24,10 +24,20 @@ class NvidiaHandler(OpenAICompletionsHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
-        self.client = OpenAI(
-            base_url="https://integrate.api.nvidia.com/v1",
-            api_key=os.getenv("NVIDIA_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use NVIDIA API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use NVIDIA API key
+        api_key = os.getenv("NVIDIA_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use NVIDIA base URL
+        kwargs["base_url"] = "https://integrate.api.nvidia.com/v1"
+
+        return kwargs
 
     def decode_ast(self, result, language, has_tool_call_tag):
         return default_decode_ast_prompting(result, language, has_tool_call_tag)

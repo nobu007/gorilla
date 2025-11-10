@@ -21,10 +21,22 @@ class MiningHandler(OpenAICompletionsHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
-        self.client = OpenAI(
-            base_url= os.getenv("MINING_BASE_URL"),
-            api_key=os.getenv("MINING_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use Mining API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use Mining API key
+        api_key = os.getenv("MINING_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use Mining base URL
+        base_url = os.getenv("MINING_BASE_URL")
+        if base_url:
+            kwargs["base_url"] = base_url
+
+        return kwargs
 
     def decode_ast(self, result, language, has_tool_call_tag):
         decoded_output = []

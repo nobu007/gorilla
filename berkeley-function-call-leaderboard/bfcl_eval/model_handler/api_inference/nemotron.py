@@ -32,10 +32,20 @@ class NemotronHandler(OpenAICompletionsHandler):
         **kwargs,
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
-        self.client = OpenAI(
-            base_url="https://integrate.api.nvidia.com/v1",
-            api_key=os.getenv("NVIDIA_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use NVIDIA API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use NVIDIA API key
+        api_key = os.getenv("NVIDIA_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use NVIDIA base URL
+        kwargs["base_url"] = "https://integrate.api.nvidia.com/v1"
+
+        return kwargs
 
     # Although Nemotron is a FC model, its endpoint does not take in function docs, but instead have them as part of the system prompt.
     # So we use the _query_prompting method for FC inference.

@@ -14,7 +14,19 @@ class DMCitoHandler(MiningHandler):
     ) -> None:
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.model_style = ModelStyle.OPENAI_COMPLETIONS
-        self.client = OpenAI(
-            base_url= os.getenv("DMCITO_BASE_URL"),
-            api_key=os.getenv("DMCITO_API_KEY"),
-        )
+
+    def _build_client_kwargs(self):
+        """Override to use DMCito API settings instead of OpenAI."""
+        kwargs = {}
+
+        # Use DMCito API key
+        api_key = os.getenv("DMCITO_API_KEY")
+        if api_key:
+            kwargs["api_key"] = api_key
+
+        # Use DMCito base URL
+        base_url = os.getenv("DMCITO_BASE_URL")
+        if base_url:
+            kwargs["base_url"] = base_url
+
+        return kwargs
