@@ -869,7 +869,23 @@ class BaseHandler:
         Call the model API in FC mode to get the response.
         Return the response object that can be used to feed into the `_parse_query_response_FC` method.
         """
-        result = self._query_FC_impl(inference_data)
+        # Backward compatibility: Check if subclass has overridden _query_FC
+        if type(self)._query_FC != BaseHandler._query_FC:
+            # Legacy implementation: call the subclass's _query_FC directly
+            # Skip this base implementation to avoid infinite recursion
+            mro = type(self).__mro__
+            # Find the next class in MRO that has _query_FC implementation
+            for cls in mro[1:]:  # Skip BaseHandler
+                if '_query_FC' in cls.__dict__ and cls._query_FC != BaseHandler._query_FC:
+                    result = cls._query_FC(self, inference_data)
+                    break
+            else:
+                # Fallback to new implementation if no legacy implementation found
+                result = self._query_FC_impl(inference_data)
+        else:
+            # New implementation: call _query_FC_impl
+            result = self._query_FC_impl(inference_data)
+
         # Store the response for debugging purposes
         self._last_model_response = result
         return result
@@ -878,6 +894,9 @@ class BaseHandler:
         """
         Implementation of _query_FC to be overridden by subclasses.
         This is where the actual API call happens.
+
+        New implementations should override this method instead of _query_FC
+        to enable the debugging functionality.
         """
         raise NotImplementedError
 
@@ -969,7 +988,23 @@ class BaseHandler:
         Call the model API in prompting mode to get the response.
         Return the response object that can be used to feed into the decode method.
         """
-        result = self._query_prompting_impl(inference_data)
+        # Backward compatibility: Check if subclass has overridden _query_prompting
+        if type(self)._query_prompting != BaseHandler._query_prompting:
+            # Legacy implementation: call the subclass's _query_prompting directly
+            # Skip this base implementation to avoid infinite recursion
+            mro = type(self).__mro__
+            # Find the next class in MRO that has _query_prompting implementation
+            for cls in mro[1:]:  # Skip BaseHandler
+                if '_query_prompting' in cls.__dict__ and cls._query_prompting != BaseHandler._query_prompting:
+                    result = cls._query_prompting(self, inference_data)
+                    break
+            else:
+                # Fallback to new implementation if no legacy implementation found
+                result = self._query_prompting_impl(inference_data)
+        else:
+            # New implementation: call _query_prompting_impl
+            result = self._query_prompting_impl(inference_data)
+
         # Store the response for debugging purposes
         self._last_model_response = result
         return result
@@ -978,6 +1013,9 @@ class BaseHandler:
         """
         Implementation of _query_prompting to be overridden by subclasses.
         This is where the actual API call happens.
+
+        New implementations should override this method instead of _query_prompting
+        to enable the debugging functionality.
         """
         raise NotImplementedError
 
