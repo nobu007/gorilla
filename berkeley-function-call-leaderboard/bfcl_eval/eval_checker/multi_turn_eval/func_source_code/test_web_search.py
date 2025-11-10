@@ -10,7 +10,25 @@ import time
 from typing import Dict, Any
 
 # Import the new web search functionality
-from web_search import WebSearchAPI, SearchConfig, DuckDuckGoBackend, SerpApiBackend
+import sys
+import os
+
+# Add current directory to path for imports
+sys.path.insert(0, os.path.dirname(__file__))
+
+try:
+    from web_search import WebSearchAPI, SearchConfig, DuckDuckGoBackend, SerpApiBackend, YouComBackend
+    NEW_STRUCTURE_AVAILABLE = True
+except ImportError:
+    # Fallback to old structure if new structure is not available
+    try:
+        from web_search import WebSearchAPI, DuckDuckGoBackend, SerpApiBackend
+        YouComBackend = None  # Not available in old structure
+        NEW_STRUCTURE_AVAILABLE = False
+    except ImportError:
+        # If even old structure doesn't work, exit
+        print("Error: Cannot import web_search functionality")
+        sys.exit(1)
 
 
 def test_backend_initialization():
@@ -29,7 +47,7 @@ def test_backend_initialization():
     print(f"\n✅ Available backends: {available}")
     print(f"✅ Total backends: {len(api.backends)}")
 
-    return len(available) > 0
+    assert len(available) > 0
 
 
 def test_basic_duckduckgo_search():
@@ -52,7 +70,7 @@ def test_basic_duckduckgo_search():
 
         if isinstance(result, dict) and "error" in result:
             print(f"❌ Search failed: {result['error']}")
-            return False
+            assert False
 
         if isinstance(result, list):
             print(f"✅ Search successful! Found {len(result)} results:")
@@ -64,11 +82,11 @@ def test_basic_duckduckgo_search():
                     print(f"     Snippet: {snippet}")
                 print()
 
-        return True
+        assert True
 
     except Exception as e:
         print(f"❌ DuckDuckGo test failed with exception: {e}")
-        return False
+        assert False
 
 
 def test_auto_selection():
@@ -88,18 +106,18 @@ def test_auto_selection():
 
         if isinstance(result, dict) and "error" in result:
             print(f"❌ Auto selection failed: {result['error']}")
-            return False
+            assert False
 
         if isinstance(result, list):
             print(f"✅ Auto selection successful! Found {len(result)} results:")
             for i, item in enumerate(result, 1):
                 print(f"  {i}. {item.get('title', 'No title')}")
 
-        return True
+        assert True
 
     except Exception as e:
         print(f"❌ Auto selection test failed: {e}")
-        return False
+        assert False
 
 
 def test_explicit_backend_selection():
@@ -121,18 +139,18 @@ def test_explicit_backend_selection():
 
         if isinstance(result, dict) and "error" in result:
             print(f"❌ DuckDuckGo selection failed: {result['error']}")
-            return False
+            assert False
 
         if isinstance(result, list):
             print(f"✅ DuckDuckGo selection successful! Found {len(result)} results")
             for i, item in enumerate(result, 1):
                 print(f"  {i}. {item.get('title', 'No title')}")
 
-        return True
+        assert True
 
     except Exception as e:
         print(f"❌ Explicit selection test failed: {e}")
-        return False
+        assert False
 
 
 def test_configuration_system():
@@ -165,11 +183,11 @@ def test_configuration_system():
         print(f"✅ Proxy host: {proxy_config.get('host')}")
         print(f"✅ Proxy port: {proxy_config.get('port')}")
 
-        return True
+        assert True
 
     except Exception as e:
         print(f"❌ Configuration test failed: {e}")
-        return False
+        assert False
 
 
 def test_legacy_compatibility():
@@ -195,16 +213,61 @@ def test_legacy_compatibility():
 
         if isinstance(result, dict) and "error" in result:
             print(f"❌ Legacy compatibility test failed: {result['error']}")
-            return False
+            assert False
 
         if isinstance(result, list):
             print(f"✅ Legacy compatibility successful! Found {len(result)} results")
 
-        return True
+        assert True
 
     except Exception as e:
         print(f"❌ Legacy compatibility test failed: {e}")
-        return False
+        assert False
+
+
+def test_youcom_backend():
+    """Test You.com backend initialization and basic functionality."""
+    print("\n🔍 Testing You.com Backend")
+    print("=" * 50)
+
+    if YouComBackend is None:
+        print("⚠️ You.com backend not available in this version")
+        assert True
+
+    try:
+        # Create backend instance
+        backend = YouComBackend()
+
+        # Check availability
+        available = backend.is_available()
+        print(f"✅ You.com backend created successfully")
+        print(f"✅ Available: {available}")
+
+        if available:
+            # Try a simple search
+            print("Testing search...")
+            result = backend.search(
+                keywords="artificial intelligence",
+                max_results=2,
+                region="wt-wt"
+            )
+
+            if isinstance(result, dict) and "error" in result:
+                print(f"❌ Search failed: {result['error']}")
+                assert False
+
+            if isinstance(result, list):
+                print(f"✅ Search successful! Found {len(result)} results")
+                for i, item in enumerate(result, 1):
+                    print(f"  {i}. {item.get('title', 'No title')}")
+        else:
+            print("⚠️ You.com API key not configured, skipping search test")
+
+        assert True
+
+    except Exception as e:
+        print(f"❌ You.com test failed with exception: {e}")
+        assert False
 
 
 def main():
@@ -217,6 +280,7 @@ def main():
         ("Basic DuckDuckGo Search", test_basic_duckduckgo_search),
         ("Auto Selection", test_auto_selection),
         ("Explicit Backend Selection", test_explicit_backend_selection),
+        ("You.com Backend", test_youcom_backend),
         ("Configuration System", test_configuration_system),
         ("Legacy Compatibility", test_legacy_compatibility),
     ]
