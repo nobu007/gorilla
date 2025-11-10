@@ -17,6 +17,6 @@ class GLMAPIHandler(OpenAICompletionsHandler):
         super().__init__(model_name, temperature, registry_name, is_fc_model, **kwargs)
         self.client = OpenAI(
             api_key=os.getenv("GLM_API_KEY"),
-            base_url="https://open.bigmodel.cn/api/paas/v4/",
+            base_url="https://api.z.ai/api/coding/paas/v4/",
             timeout=httpx.Timeout(timeout=300.0, connect=8.0),
         )
