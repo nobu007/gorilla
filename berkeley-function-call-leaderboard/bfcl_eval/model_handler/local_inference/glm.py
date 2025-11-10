@@ -60,14 +60,32 @@ class GLMHandler(OSSHandler):
     def decode_execute(self, result, has_tool_call_tag):
         args = result.split("\n")
         if len(args) == 1:
-            func = args[0]
+            # Single argument case - treat as function name with no args
+            func = [{args[0]: {}}]
         elif len(args) >= 2:
+            # Multiple arguments case - parse second argument as JSON
             try:
-                # Try to parse the second argument as JSON
                 parsed_args = json.loads(args[1])
                 func = [{args[0]: parsed_args}]
             except json.JSONDecodeError:
-                # If JSON parsing fails, keep it as a string
-                func = [{args[0]: args[1]}]
+                # If JSON parsing fails, try to parse as key=value pairs
+                try:
+                    # Handle format like: key1=value1, key2=value2
+                    if "=" in args[1]:
+                        pairs = args[1].split(",")
+                        parsed_args = {}
+                        for pair in pairs:
+                            if "=" in pair:
+                                k, v = pair.split("=", 1)
+                                parsed_args[k.strip()] = v.strip().strip('"\'')
+                        func = [{args[0]: parsed_args}]
+                    else:
+                        # If no equals sign, treat as empty dict
+                        func = [{args[0]: {}}]
+                except Exception:
+                    # Final fallback - empty args
+                    func = [{args[0]: {}}]
 
         return convert_to_function_call(func)
+
+    

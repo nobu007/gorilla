@@ -74,6 +74,20 @@ class OpenAICompletionsHandler(BaseHandler):
 
     def decode_execute(self, result, has_tool_call_tag):
         if self.is_fc_model:
+            # Ensure result is in the expected format for convert_to_function_call
+            if isinstance(result, str):
+                try:
+                    parsed_result = json.loads(result)
+                    # Ensure it's a list or dict
+                    if isinstance(parsed_result, dict):
+                        result = [parsed_result]
+                    elif not isinstance(parsed_result, list):
+                        result = [{parsed_result: {}}]
+                    else:
+                        result = parsed_result
+                except json.JSONDecodeError:
+                    # If JSON parsing fails, treat as simple function name
+                    result = [{result: {}}]
             return convert_to_function_call(result)
         else:
             return default_decode_execute_prompting(result)
