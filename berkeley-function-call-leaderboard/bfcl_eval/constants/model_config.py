@@ -76,7 +76,7 @@ from bfcl_eval.model_handler.local_inference.think_agent import ThinkAgentHandle
 @dataclass
 class ModelConfig:
     """
-    Model configuration class for storing model metadata and settings. 
+    Model configuration class for storing model metadata and settings.
 
     Attributes:
         model_name (str): Name of the model as used in the vendor API or on Hugging Face (may not be unique).
@@ -1124,7 +1124,7 @@ api_inference_model_map = {
     # OpenRouter Free Models (Provider Order)
     # OpenAI
     "openrouter/openai/gpt-oss-20b": ModelConfig(
-        model_name="openrouter/openai/gpt-oss-20b:free",
+        model_name="openai/gpt-oss-20b:free",
         display_name="GPT-OSS-20B (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/openai/gpt-oss-20b",
         org="OpenAI",
@@ -1136,7 +1136,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/openai/gpt-oss-20b-FC": ModelConfig(
-        model_name="openrouter/openai/gpt-oss-20b:free",
+        model_name="openai/gpt-oss-20b:free",
         display_name="GPT-OSS-20B (FC) (OpenRouter Free)",
         url="https://openrouter.ai/openai/gpt-oss-20b",
         org="OpenAI",
@@ -1150,7 +1150,7 @@ api_inference_model_map = {
 
     # Google
     "openrouter/google/gemma-3-27b": ModelConfig(
-        model_name="openrouter/google/gemma-3-27b:free",
+        model_name="google/gemma-3-27b:free",
         display_name="Gemma-3-27B (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/google/gemma-3-27b",
         org="Google",
@@ -1162,7 +1162,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/google/gemma-3-27b-FC": ModelConfig(
-        model_name="openrouter/google/gemma-3-27b:free",
+        model_name="google/gemma-3-27b:free",
         display_name="Gemma-3-27B (FC) (OpenRouter Free)",
         url="https://openrouter.ai/google/gemma-3-27b",
         org="Google",
@@ -1176,7 +1176,7 @@ api_inference_model_map = {
 
     # Qwen
     "openrouter/qwen/qwen3-235b-a22b-instruct": ModelConfig(
-        model_name="openrouter/qwen/qwen3-235b-a22b-instruct:free",
+        model_name="qwen/qwen3-235b-a22b-instruct:free",
         display_name="Qwen3-235B-A22B-Instruct (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/qwen/qwen3-235b-a22b-instruct",
         org="Qwen",
@@ -1188,7 +1188,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/qwen/qwen3-235b-a22b-instruct-FC": ModelConfig(
-        model_name="openrouter/qwen/qwen3-235b-a22b-instruct:free",
+        model_name="qwen/qwen3-235b-a22b-instruct:free",
         display_name="Qwen3-235B-A22B-Instruct (FC) (OpenRouter Free)",
         url="https://openrouter.ai/qwen/qwen3-235b-a22b-instruct",
         org="Qwen",
@@ -1200,7 +1200,7 @@ api_inference_model_map = {
         underscore_to_dot=True,
     ),
     "openrouter/qwen/qwen3-coder-480b-a35b": ModelConfig(
-        model_name="openrouter/qwen/qwen3-coder-480b-a35b:free",
+        model_name="qwen/qwen3-coder-480b-a35b:free",
         display_name="Qwen3-Coder-480B-A35B (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/qwen/qwen3-coder-480b-a35b",
         org="Qwen",
@@ -1212,7 +1212,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/qwen/qwen3-coder-480b-a35b-FC": ModelConfig(
-        model_name="openrouter/qwen/qwen3-coder-480b-a35b:free",
+        model_name="qwen/qwen3-coder-480b-a35b:free",
         display_name="Qwen3-Coder-480B-A35B (FC) (OpenRouter Free)",
         url="https://openrouter.ai/qwen/qwen3-coder-480b-a35b",
         org="Qwen",
@@ -1226,7 +1226,7 @@ api_inference_model_map = {
 
     # DeepSeek
     "openrouter/deepseek/deepseek-r1-0528": ModelConfig(
-        model_name="openrouter/deepseek/deepseek-r1-0528:free",
+        model_name="deepseek/deepseek-r1-0528:free",
         display_name="DeepSeek-R1-0528 (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/deepseek/deepseek-r1-0528",
         org="DeepSeek",
@@ -1238,7 +1238,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/deepseek/deepseek-r1-0528-FC": ModelConfig(
-        model_name="openrouter/deepseek/deepseek-r1-0528:free",
+        model_name="deepseek/deepseek-r1-0528:free",
         display_name="DeepSeek-R1-0528 (FC) (OpenRouter Free)",
         url="https://openrouter.ai/deepseek/deepseek-r1-0528",
         org="DeepSeek",
@@ -1252,7 +1252,7 @@ api_inference_model_map = {
 
     # MiniMax
     "openrouter/minimax/minimax-m2": ModelConfig(
-        model_name="openrouter/minimax/minimax-m2:free",
+        model_name="minimax/minimax-m2:free",
         display_name="MiniMax-M2 (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/minimax/minimax-m2",
         org="MiniMax",
@@ -1264,7 +1264,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/minimax/minimax-m2-FC": ModelConfig(
-        model_name="openrouter/minimax/minimax-m2:free",
+        model_name="minimax/minimax-m2:free",
         display_name="MiniMax-M2 (FC) (OpenRouter Free)",
         url="https://openrouter.ai/minimax/minimax-m2",
         org="MiniMax",
@@ -1278,7 +1278,7 @@ api_inference_model_map = {
 
     # MoonshotAI
     "openrouter/moonshotai/kimi-k2-0711": ModelConfig(
-        model_name="openrouter/moonshotai/kimi-k2-0711:free",
+        model_name="moonshotai/kimi-k2-0711:free",
         display_name="Kimi-K2-0711 (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/moonshotai/kimi-k2-0711",
         org="MoonshotAI",
@@ -1290,7 +1290,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/moonshotai/kimi-k2-0711-FC": ModelConfig(
-        model_name="openrouter/moonshotai/kimi-k2-0711:free",
+        model_name="moonshotai/kimi-k2-0711:free",
         display_name="Kimi-K2-0711 (FC) (OpenRouter Free)",
         url="https://openrouter.ai/moonshotai/kimi-k2-0711",
         org="MoonshotAI",
@@ -1304,7 +1304,7 @@ api_inference_model_map = {
 
     # Meta
     "openrouter/meta-llama/llama-4-scout": ModelConfig(
-        model_name="openrouter/meta-llama/llama-4-scout:free",
+        model_name="meta-llama/llama-4-scout:free",
         display_name="Llama-4-Scout (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/meta-llama/llama-4-scout",
         org="Meta",
@@ -1316,7 +1316,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/meta-llama/llama-4-scout-FC": ModelConfig(
-        model_name="openrouter/meta-llama/llama-4-scout:free",
+        model_name="meta-llama/llama-4-scout:free",
         display_name="Llama-4-Scout (FC) (OpenRouter Free)",
         url="https://openrouter.ai/meta-llama/llama-4-scout",
         org="Meta",
@@ -1330,7 +1330,7 @@ api_inference_model_map = {
 
     # Kwaipilot
     "openrouter/kwaipilot/kat-coder": ModelConfig(
-        model_name="openrouter/kwaipilot/kat-coder:free",
+        model_name="kwaipilot/kat-coder:free",
         display_name="Kat-Coder (Prompt) (OpenRouter Free)",
         url="https://openrouter.ai/kwaipilot/kat-coder",
         org="Kwaipilot",
@@ -1342,7 +1342,7 @@ api_inference_model_map = {
         underscore_to_dot=False,
     ),
     "openrouter/kwaipilot/kat-coder-FC": ModelConfig(
-        model_name="openrouter/kwaipilot/kat-coder:free",
+        model_name="kwaipilot/kat-coder:free",
         display_name="Kat-Coder (FC) (OpenRouter Free)",
         url="https://openrouter.ai/kwaipilot/kat-coder",
         org="Kwaipilot",
