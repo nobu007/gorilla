@@ -3,12 +3,11 @@ import time
 from typing import Any
 
 from bfcl_eval.constants.type_mappings import GORILLA_TO_OPENAPI
-from bfcl_eval.model_handler.base_handler import BaseHandler
+from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
 from bfcl_eval.constants.enums import ModelStyle
 from bfcl_eval.model_handler.utils import (
     convert_to_tool,
     default_decode_ast_prompting,
-    default_decode_execute_prompting,
     extract_system_prompt,
     format_execution_results_prompting,
     retry_with_backoff,
@@ -25,7 +24,7 @@ from google.genai.types import (
 )
 
 
-class GeminiHandler(BaseHandler):
+class GeminiHandler(EnhancedDecodeExecuteHandler):
     def __init__(
         self,
         model_name,
@@ -63,18 +62,11 @@ class GeminiHandler(BaseHandler):
                 result = [result]
             return result
 
-    def decode_execute(self, result, has_tool_call_tag):
-        if not self.is_fc_model:
+    def _preprocess_non_fc_result(self, result: Any) -> Any:
+        """Remove tool_code code block markers from Gemini responses."""
+        if isinstance(result, str):
             result = result.replace("```tool_code\n", "").replace("\n```", "")
-            return default_decode_execute_prompting(result, has_tool_call_tag)
-        else:
-            func_call_list = []
-            for function_call in result:
-                for func_name, func_args in function_call.items():
-                    func_call_list.append(
-                        f"{func_name}({','.join([f'{k}={repr(v)}' for k, v in func_args.items()])})"
-                    )
-            return func_call_list
+        return result
 
     # We can't retry on ClientError because it's too broad.
     # Both rate limit and invalid function description will trigger google.genai.errors.ClientError

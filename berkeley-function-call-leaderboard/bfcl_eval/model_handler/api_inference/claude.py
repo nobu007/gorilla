@@ -7,13 +7,11 @@ from anthropic import Anthropic, RateLimitError
 from anthropic.types import TextBlock, ToolUseBlock
 from bfcl_eval.constants.enums import ModelStyle
 from bfcl_eval.constants.type_mappings import GORILLA_TO_OPENAPI
-from bfcl_eval.model_handler.base_handler import BaseHandler
+from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
 from bfcl_eval.model_handler.utils import (
     combine_consecutive_user_prompts,
-    convert_to_function_call,
     convert_to_tool,
     default_decode_ast_prompting,
-    default_decode_execute_prompting,
     extract_system_prompt,
     format_execution_results_prompting,
     retry_with_backoff,
@@ -22,7 +20,7 @@ from bfcl_eval.model_handler.utils import (
 from bfcl_eval.utils import contain_multi_turn_interaction
 
 
-class ClaudeHandler(BaseHandler):
+class ClaudeHandler(EnhancedDecodeExecuteHandler):
     def __init__(
         self,
         model_name,
@@ -47,14 +45,7 @@ class ClaudeHandler(BaseHandler):
                 decoded_output.append({name: params})
             return decoded_output
 
-    def decode_execute(self, result, has_tool_call_tag):
-        if not self.is_fc_model:
-            return default_decode_execute_prompting(result, has_tool_call_tag)
-
-        else:
-            function_call = convert_to_function_call(result)
-            return function_call
-
+    
     @retry_with_backoff(error_type=RateLimitError)
     def generate_with_backoff(self, **kwargs):
         start_time = time.time()

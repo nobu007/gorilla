@@ -3,13 +3,11 @@ import os
 import time
 
 from bfcl_eval.constants.type_mappings import GORILLA_TO_OPENAPI
-from bfcl_eval.model_handler.base_handler import BaseHandler
+from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
 from bfcl_eval.constants.enums import ModelStyle
 from bfcl_eval.model_handler.utils import (
-    convert_to_function_call,
     convert_to_tool,
     default_decode_ast_prompting,
-    default_decode_execute_prompting,
     format_execution_results_prompting,
     retry_with_backoff,
     system_prompt_pre_processing_chat_model,
@@ -18,7 +16,7 @@ from openai import OpenAI, RateLimitError
 from openai.types.responses import Response
 
 
-class OpenAIResponsesHandler(BaseHandler):
+class OpenAIResponsesHandler(EnhancedDecodeExecuteHandler):
     def __init__(
         self,
         model_name,
@@ -71,12 +69,7 @@ class OpenAIResponsesHandler(BaseHandler):
         else:
             return default_decode_ast_prompting(result, language, has_tool_call_tag)
 
-    def decode_execute(self, result, has_tool_call_tag):
-        if self.is_fc_model:
-            return convert_to_function_call(result)
-        else:
-            return default_decode_execute_prompting(result, has_tool_call_tag)
-
+    
     @retry_with_backoff(error_type=RateLimitError)
     def generate_with_backoff(self, **kwargs):
         start_time = time.time()

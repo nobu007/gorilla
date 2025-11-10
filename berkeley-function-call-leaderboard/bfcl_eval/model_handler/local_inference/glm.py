@@ -58,12 +58,26 @@ class GLMHandler(OSSHandler):
 
     @override
     def decode_execute(self, result, has_tool_call_tag):
-        args = result.split("\n")
+        # Enhanced GLM decode_execute with robust JSON handling
+        # Handle None or empty responses
+        if result is None or (isinstance(result, str) and result.strip() == ""):
+            return []
+
+        # Split by newlines for GLM format: func_name\njson_args
+        if isinstance(result, str):
+            args = result.split("\n")
+        else:
+            # If result is not a string, try to convert to string first
+            try:
+                args = str(result).split("\n")
+            except Exception:
+                return convert_to_function_call([])
+
         if len(args) == 1:
             # Single argument case - treat as function name with no args
             func = [{args[0]: {}}]
         elif len(args) >= 2:
-            # Multiple arguments case - parse second argument as JSON
+            # Multiple arguments case - parse second argument as JSON with enhanced error handling
             try:
                 parsed_args = json.loads(args[1])
                 func = [{args[0]: parsed_args}]
@@ -85,6 +99,9 @@ class GLMHandler(OSSHandler):
                 except Exception:
                     # Final fallback - empty args
                     func = [{args[0]: {}}]
+        else:
+            # Empty result
+            func = []
 
         return convert_to_function_call(func)
 

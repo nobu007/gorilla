@@ -1,16 +1,13 @@
-import json
 import os
 import time
 from typing import Any
 
 from bfcl_eval.constants.type_mappings import GORILLA_TO_OPENAPI
-from bfcl_eval.model_handler.base_handler import BaseHandler
+from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
 from bfcl_eval.constants.enums import ModelStyle
 from bfcl_eval.model_handler.utils import (
-    convert_to_function_call,
     convert_to_tool,
     default_decode_ast_prompting,
-    default_decode_execute_prompting,
     format_execution_results_prompting,
     retry_with_backoff,
     system_prompt_pre_processing_chat_model,
@@ -18,7 +15,7 @@ from bfcl_eval.model_handler.utils import (
 from openai import OpenAI, RateLimitError
 
 
-class OpenAICompletionsHandler(BaseHandler):
+class OpenAICompletionsHandler(EnhancedDecodeExecuteHandler):
     def __init__(
         self,
         model_name,
@@ -72,29 +69,7 @@ class OpenAICompletionsHandler(BaseHandler):
         else:
             return default_decode_ast_prompting(result, language, has_tool_call_tag)
 
-    def decode_execute(self, result, has_tool_call_tag):
-        if self.is_fc_model:
-            # Ensure result is in the expected format for convert_to_function_call
-            # Handle None or empty responses
-            if result is None or (isinstance(result, str) and result.strip() == ""):
-                result = []
-            elif isinstance(result, str):
-                try:
-                    parsed_result = json.loads(result)
-                    # Ensure it's a list or dict
-                    if isinstance(parsed_result, dict):
-                        result = [parsed_result]
-                    elif not isinstance(parsed_result, list):
-                        result = [{parsed_result: {}}]
-                    else:
-                        result = parsed_result
-                except json.JSONDecodeError:
-                    # If JSON parsing fails, treat as simple function name
-                    result = [{result: {}}]
-            return convert_to_function_call(result)
-        else:
-            return default_decode_execute_prompting(result)
-
+    
     @retry_with_backoff(error_type=RateLimitError)
     def generate_with_backoff(self, **kwargs):
         start_time = time.time()

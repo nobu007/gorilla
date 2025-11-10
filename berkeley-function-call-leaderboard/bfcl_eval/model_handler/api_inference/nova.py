@@ -4,18 +4,17 @@ from typing import Any
 
 import boto3
 from bfcl_eval.constants.type_mappings import GORILLA_TO_OPENAPI
-from bfcl_eval.model_handler.base_handler import BaseHandler
+from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
 from bfcl_eval.constants.enums import ModelStyle
 from bfcl_eval.model_handler.utils import (
     combine_consecutive_user_prompts,
-    convert_to_function_call,
     convert_to_tool,
     extract_system_prompt,
     retry_with_backoff,
 )
 
 
-class NovaHandler(BaseHandler):
+class NovaHandler(EnhancedDecodeExecuteHandler):
     def __init__(
         self,
         model_name,
@@ -38,9 +37,10 @@ class NovaHandler(BaseHandler):
         return result
 
     def decode_execute(self, result, has_tool_call_tag):
-        if type(result) != list:
+        # Nova specific validation: result must be a list
+        if not isinstance(result, list):
             raise ValueError(f"Model did not return a list of function calls: {result}")
-        return convert_to_function_call(result)
+        return super().decode_execute(result, has_tool_call_tag)
 
     @retry_with_backoff(error_message_pattern=r".*\(ThrottlingException\).*")
     def generate_with_backoff(self, **kwargs):
