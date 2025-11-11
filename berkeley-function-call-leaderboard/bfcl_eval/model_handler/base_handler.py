@@ -271,11 +271,11 @@ class BaseHandler:
                     )
 
                     if is_empty_execute_response(decoded_model_responses):
-                        print("Empty response from the model. Proceed to next turn.")
+                        print("No function calls from the model. Proceed to next turn.")
                         current_step_inference_log.append(
                             {
                                 "role": "handler_log",
-                                "content": f"Empty response from the model. Proceed to next turn.",
+                                "content": f"No function calls from the model. Proceed to next turn.",
                                 "model_response_decoded": decoded_model_responses,
                             }
                         )
@@ -584,11 +584,11 @@ class BaseHandler:
 
                     model_response_data["model_responses_decoded"] = decoded_model_responses
                     if is_empty_execute_response(decoded_model_responses):
-                        print("Empty response from the model. Proceed to next turn.")
+                        print("No function calls from the model. Proceed to next turn.")
                         current_step_inference_log.append(
                             {
                                 "role": "handler_log",
-                                "content": f"Empty response from the model. Proceed to next turn.",
+                                "content": f"No function calls from the model. Proceed to next turn.",
                                 "model_response_decoded": decoded_model_responses,
                             }
                         )

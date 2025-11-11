@@ -2,6 +2,7 @@ import ast
 import builtins
 import copy
 import json
+import logging
 import operator
 import re
 from functools import reduce
@@ -210,23 +211,46 @@ def convert_to_tool(functions, mapping, model_style):
     return oai_tool
 
 
+logger = logging.getLogger(__name__)
+
 def convert_to_function_call(function_call_list):
     if type(function_call_list) == dict:
         function_call_list = [function_call_list]
     # function_call_list is of type list[dict[str, str]] or list[dict[str, dict]]
     execution_list = []
+
+    # Handle empty or None input
+    if not function_call_list:
+        return execution_list
+
     for function_call in function_call_list:
+        # Skip if function_call is not a dict
+        if not isinstance(function_call, dict):
+            logger.warning(f"Skipping non-dict function_call: {function_call} (type: {type(function_call)})")
+            continue
+
         for key, value in function_call.items():
+            original_value_type = type(value).__name__
+
             if type(value) == str:
                 # Handle empty strings
                 if value.strip() == "":
+                    logger.debug(f"Function '{key}': Empty string value, treating as empty dict")
                     value = {}
                 else:
                     try:
-                        value = json.loads(value)
-                    except json.JSONDecodeError:
+                        parsed_value = json.loads(value)
+                        value = parsed_value
+                        logger.debug(f"Function '{key}': Successfully parsed JSON string value")
+                    except json.JSONDecodeError as e:
                         # If JSON parsing fails, treat as empty dict
+                        logger.warning(f"Function '{key}': Failed to parse JSON string '{value[:100]}...': {e}. Treating as empty dict.")
                         value = {}
+            # Ensure value is a dictionary before calling .items()
+            if not isinstance(value, dict):
+                logger.warning(f"Function '{key}': Unexpected value type '{original_value_type}' with value '{value}'. Treating as empty dict.")
+                value = {}
+
             execution_list.append(
                 f"{key}({','.join([f'{k}={repr(v)}' for k,v in value.items()])})"
             )

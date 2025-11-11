@@ -46,6 +46,7 @@ class EnhancedDecodeExecuteHandler(BaseHandler):
         Returns:
             Decoded function calls ready for execution
         """
+
         if not self.is_fc_model:
             result = self._preprocess_non_fc_result(result)
             return default_decode_execute_prompting(result, has_tool_call_tag)
@@ -67,4 +68,16 @@ class EnhancedDecodeExecuteHandler(BaseHandler):
                 except json.JSONDecodeError:
                     # If JSON parsing fails, treat as simple function name
                     result = [{result: {}}]
+            elif isinstance(result, list):
+                # Check if this is a list of text responses (not function calls)
+                if all(isinstance(item, str) for item in result):
+                    # This is likely a text response from an FC model that didn't make function calls
+                    # For FC models, text responses usually indicate they chose not to make function calls
+                    # Return empty list to indicate no function calls to execute
+                    return []
+
+                # For mixed lists, try to extract valid function calls
+                # convert_to_function_call will handle the filtering of non-dict items
+                pass
+
             return convert_to_function_call(result)
