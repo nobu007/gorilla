@@ -53,12 +53,20 @@ class OpenRouterHandler(OpenAICompletionsHandler):
             if "moderation" in error_message.lower():
                 # Don't retry moderation errors - they will continue to fail
                 logging.error(f"Moderation error for {self.model_name}: {error_message}")
-                # Re-raise with more informative message
-                raise PermissionDeniedError(
+                # For moderation errors, create a new exception with enhanced message
+                # but preserve the original response and body
+                enhanced_message = (
                     f"Model {self.model_name} blocked the input due to moderation. "
                     f"This is a limitation of certain models (especially Meta's free-tier). "
                     f"Consider using a different model or upgrading to a paid tier. "
                     f"Original error: {error_message}"
+                )
+                # Re-raise using the original exception but with a custom message
+                # We need to preserve the original response and body
+                raise type(e)(
+                    message=enhanced_message,
+                    response=e.response,
+                    body=e.body
                 ) from e
             # For other permission errors, let the base class handle them
             raise
@@ -102,7 +110,13 @@ class OpenRouterHandler(OpenAICompletionsHandler):
                     f"Original error: {error_message}"
                 )
 
-            raise PermissionDeniedError(enhanced_message) from error
+            # Re-raise using the original exception type but with enhanced message
+            # Preserve the original response and body to maintain exception structure
+            raise type(error)(
+                message=enhanced_message,
+                response=error.response,
+                body=error.body
+            ) from error
         else:
             # Re-raise non-moderation permission errors as-is
             raise
