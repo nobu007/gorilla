@@ -50,6 +50,7 @@ For model names containing `{...}`, multiple versions are available. For example
 | GLM-4-9b-Chat                              | Function Calling | Self-hosted 💻 | THUDM/glm-4-9b-chat                                         |
 | GLM-4.5                                    | Function Calling | Zhipu AI       | glm-4.5-FC                                                  |
 | GLM-4.5-Air                                | Function Calling | Zhipu AI       | glm-4.5-air-FC                                              |
+| GLM-4.6                                    | Function Calling | Zhipu AI       | glm-4.6-FC                                                  |
 | GoGoAgent                                  | Prompt           | BitAgent       | BitAgent/GoGoAgent                                          |
 | Gorilla-OpenFunctions-v2                   | Function Calling | Gorilla LLM    | gorilla-openfunctions-v2                                    |
 | GPT-4.1-2025-04-14                         | Function Calling | OpenAI         | gpt-4.1-2025-04-14-FC                                       |

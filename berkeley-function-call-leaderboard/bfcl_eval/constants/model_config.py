@@ -1097,6 +1097,18 @@ api_inference_model_map = {
         is_fc_model=True,
         underscore_to_dot=True,
     ),
+    "glm-4.6-FC": ModelConfig(
+        model_name="glm-4.6",
+        display_name="GLM-4.6 (FC)",
+        url="https://huggingface.co/zai-org/GLM-4.6",
+        org="Zhipu AI",
+        license="MIT",
+        model_handler=GLMAPIHandler,
+        input_price=None,
+        output_price=None,
+        is_fc_model=True,
+        underscore_to_dot=True,
+    ),
     "kimi-k2-0905-preview-FC": ModelConfig(
         model_name="kimi-k2-0905-preview",
         display_name="Moonshotai-Kimi-K2-Instruct (FC)",

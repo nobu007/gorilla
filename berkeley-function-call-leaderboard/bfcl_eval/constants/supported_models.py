@@ -94,6 +94,7 @@ SUPPORTED_MODELS = [
     "Ling/ling-lite-v1.5",
     "glm-4.5-FC",
     "glm-4.5-air-FC",
+    "glm-4.6-FC",
     "kimi-k2-0905-preview-FC",
     "kimi-k2-0905-preview",
     "deepseek-ai/DeepSeek-R1",
