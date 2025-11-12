@@ -90,7 +90,6 @@ class OpenAICompletionsHandler(EnhancedDecodeExecuteHandler):
             "messages": message,
             "model": self.model_name,
             "temperature": self.temperature,
-            "store": False,
         }
 
         if len(tools) > 0:
@@ -227,7 +226,6 @@ class OpenAICompletionsHandler(EnhancedDecodeExecuteHandler):
             messages=inference_data["message"],
             model=self.model_name,
             temperature=self.temperature,
-            store=False,
         )
 
     def _pre_query_processing_prompting(self, test_entry: dict) -> dict:

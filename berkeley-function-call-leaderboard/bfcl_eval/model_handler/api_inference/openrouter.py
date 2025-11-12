@@ -120,3 +120,62 @@ class OpenRouterHandler(OpenAICompletionsHandler):
         else:
             # Re-raise non-moderation permission errors as-is
             raise
+
+    def decode_execute(self, result, has_tool_call_tag: bool):
+        """Override decode_execute to handle Meta model JSON parsing issues."""
+        from bfcl_eval.model_handler.utils import default_decode_execute_prompting
+        from bfcl_eval.model_handler.enhanced_decode_execute_handler import EnhancedDecodeExecuteHandler
+
+        # Check if this is a Meta model and if the result contains problematic JSON fragments
+        is_meta_model = "meta-llama" in self.model_name.lower()
+
+        if is_meta_model and isinstance(result, list):
+            # Check if any items in the list contain JSON fragments that look like our error cases
+            has_json_fragments = False
+            for item in result:
+                if isinstance(item, dict):
+                    for key, value in item.items():
+                        if isinstance(value, str) and (
+                            (value.startswith("function") and "..." in value) or
+                            (value.startswith("core_memory") and "..." in value) or
+                            value.endswith("...")
+                        ):
+                            has_json_fragments = True
+                            break
+                    if has_json_fragments:
+                        break
+
+            if has_json_fragments:
+                logging.warning(f"Meta model {self.model_name} returned JSON fragments. Attempting to clean up...")
+
+                # Clean up the result by replacing problematic values with empty dicts
+                cleaned_result = []
+                for item in result:
+                    if isinstance(item, dict):
+                        cleaned_item = {}
+                        for key, value in item.items():
+                            if isinstance(value, str) and (
+                                (value.startswith("function") and "..." in value) or
+                                (value.startswith("core_memory") and "..." in value) or
+                                value.endswith("...")
+                            ):
+                                # Replace JSON fragments with empty dict
+                                cleaned_item[key] = {}
+                                logging.debug(f"Cleaned JSON fragment in '{key}': '{value[:50]}...' -> {{}}")
+                            else:
+                                cleaned_item[key] = value
+                        cleaned_result.append(cleaned_item)
+                    else:
+                        cleaned_result.append(item)
+
+                # Use the enhanced handler's decode_execute with the cleaned result
+                handler = EnhancedDecodeExecuteHandler(
+                    self.model_name, self.temperature, self.registry_name, self.is_fc_model
+                )
+                return handler.decode_execute(cleaned_result, has_tool_call_tag)
+
+        # For non-Meta models or when no issues are detected, use the default implementation
+        handler = EnhancedDecodeExecuteHandler(
+            self.model_name, self.temperature, self.registry_name, self.is_fc_model
+        )
+        return handler.decode_execute(result, has_tool_call_tag)
