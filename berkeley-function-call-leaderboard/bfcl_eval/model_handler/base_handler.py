@@ -1,5 +1,7 @@
 import json
 from copy import deepcopy
+from datetime import datetime, timezone
+import threading
 from typing import TYPE_CHECKING, Any
 
 from bfcl_eval.constants.category_mapping import VERSION_PREFIX
@@ -61,9 +63,31 @@ class BaseHandler:
         self.registry_dir_name = registry_name.replace("/", "_")
         self.temperature = temperature
 
+        self._thread_local = threading.local()
+
         # Set any additional attributes passed via kwargs
         for _key, _value in kwargs.items():
             setattr(self, _key, _value)
+
+    def _record_inference_snapshot(self, inference_data: dict, extra: dict | None = None):
+        snapshot = {
+            "test_entry_id": inference_data.get("test_entry_id"),
+            "model_name": self.model_name,
+            "registry_name": self.registry_name,
+            "timestamp": datetime.now(timezone.utc).isoformat(),
+            "message": make_json_serializable(inference_data.get("message")),
+            "tools": make_json_serializable(inference_data.get("tools")),
+            "inference_input_log": make_json_serializable(
+                inference_data.get("inference_input_log")
+            ),
+        }
+        if extra:
+            snapshot["extra"] = make_json_serializable(extra)
+
+        self._thread_local.last_snapshot = snapshot
+
+    def get_latest_inference_snapshot(self):
+        return getattr(self._thread_local, "last_snapshot", None)
 
     def inference(
         self,
@@ -165,7 +189,7 @@ class BaseHandler:
             if len(state_log) > 0:
                 all_inference_log.append(state_log)
 
-        inference_data: dict = {}
+        inference_data: dict = {"test_entry_id": test_entry_id}
         inference_data = self._pre_query_processing_FC(inference_data, test_entry)
         inference_data = self._compile_tools(inference_data, test_entry)
 
@@ -217,6 +241,14 @@ class BaseHandler:
                 # Add to the current_turn_inference_log at beginning of each step so that we don't need to bother dealing with the break statements
                 current_turn_inference_log[f"step_{count}"] = current_step_inference_log
 
+                self._record_inference_snapshot(
+                    inference_data,
+                    extra={
+                        "turn_index": turn_idx,
+                        "step_index": count,
+                        "test_category": test_category,
+                    },
+                )
                 api_response, query_latency = self._query_FC(inference_data)
 
                 # This part of logging is disabled by default because it is too verbose and will make the result file extremely large
@@ -484,6 +516,7 @@ class BaseHandler:
                 all_inference_log.append(state_log)
 
         inference_data: dict = self._pre_query_processing_prompting(test_entry)
+        inference_data["test_entry_id"] = test_entry_id
 
         all_multi_turn_messages: list[list[dict]] = test_entry["question"]
         for turn_idx, current_turn_message in enumerate(all_multi_turn_messages):
@@ -530,6 +563,14 @@ class BaseHandler:
                 # Add to the current_turn_inference_log at beginning of each step so that we don't need to bother dealing with the break statements
                 current_turn_inference_log[f"step_{count}"] = current_step_inference_log
 
+                self._record_inference_snapshot(
+                    inference_data,
+                    extra={
+                        "turn_index": turn_idx,
+                        "step_index": count,
+                        "test_category": test_category,
+                    },
+                )
                 api_response, query_latency = self._query_prompting(inference_data)
 
                 # This part of logging is disabled by default because it is too verbose and will make the result file extremely large
@@ -727,13 +768,17 @@ class BaseHandler:
     def inference_single_turn_FC(
         self, test_entry: dict, include_input_log: bool
     ) -> tuple[any, dict]:
-        inference_data: dict = {}
+        inference_data: dict = {"test_entry_id": test_entry["id"]}
         inference_data = self._pre_query_processing_FC(inference_data, test_entry)
         inference_data = self._compile_tools(inference_data, test_entry)
         inference_data = self.add_first_turn_message_FC(
             inference_data, test_entry["question"][0]
         )
 
+        self._record_inference_snapshot(
+            inference_data,
+            extra={"test_category": test_entry["id"].rsplit("_", 1)[0]},
+        )
         api_response, query_latency = self._query_FC(inference_data)
 
         # Try parsing the model response
@@ -765,10 +810,15 @@ class BaseHandler:
         self, test_entry: dict, include_input_log: bool
     ) -> tuple[any, dict]:
         inference_data: dict = self._pre_query_processing_prompting(test_entry)
+        inference_data["test_entry_id"] = test_entry["id"]
         inference_data = self.add_first_turn_message_prompting(
             inference_data, test_entry["question"][0]
         )
 
+        self._record_inference_snapshot(
+            inference_data,
+            extra={"test_category": test_entry["id"].rsplit("_", 1)[0]},
+        )
         api_response, query_latency = self._query_prompting(inference_data)
 
         # Try parsing the model response

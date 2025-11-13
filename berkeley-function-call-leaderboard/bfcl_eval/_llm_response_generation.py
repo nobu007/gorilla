@@ -1,4 +1,5 @@
 import argparse
+import json
 import multiprocessing as mp
 import os
 import shutil
@@ -9,6 +10,7 @@ import threading
 import queue
 from copy import deepcopy
 from typing import TYPE_CHECKING
+from datetime import datetime, timezone
 
 from bfcl_eval.constants.eval_config import (
     PROJECT_ROOT,
@@ -73,6 +75,26 @@ def build_handler(model_name, temperature, verbose_errors=False):
         verbose_errors=verbose_errors,
     )
     return handler
+
+
+def _write_failure_debug_log(handler, test_case_id, error, snapshot, traceback_str):
+    log_dir = RESULT_PATH / "debug_logs" / handler.registry_dir_name
+    log_dir.mkdir(parents=True, exist_ok=True)
+
+    entry = {
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "test_case_id": test_case_id,
+        "model_name": handler.model_name,
+        "error_type": type(error).__name__,
+        "error_message": str(error),
+        "traceback": traceback_str,
+        "snapshot": snapshot,
+    }
+
+    log_path = log_dir / f"{test_case_id}.jsonl"
+    with open(log_path, "a", encoding="utf-8") as f:
+        json.dump(make_json_serializable(entry), f, ensure_ascii=False)
+        f.write("\n")
 
 
 def get_involved_test_entries(test_category_args, run_ids):
@@ -182,17 +204,27 @@ def multi_threaded_inference(handler, test_case, include_input_log, exclude_stat
         # For example, timeout error or FC model returning invalid JSON response.
         # Since temperature is already set to 0.001, retrying the same test case will not help.
         # So we continue the generation process and record the error message as the model response
+        tb_full = traceback.format_exc()
         error_block = (
             "-" * 100
             + "\n❗️❗️ Error occurred during inference. Continuing to next test case.\n"
             + f"❗️❗️ Test case ID: {test_case['id']}, Error: {str(e)}\n"
-            + traceback.format_exc(limit=10)
+            + tb_full
             + "-" * 100
         )
         tqdm.write(error_block)
 
         result = f"Error during inference: {str(e)}"
-        metadata = {"traceback": traceback.format_exc()}
+        metadata = {"traceback": tb_full}
+
+        snapshot = (
+            handler.get_latest_inference_snapshot()
+            if isinstance(handler, BaseHandler)
+            else None
+        )
+        if snapshot:
+            metadata["inference_snapshot"] = snapshot
+            _write_failure_debug_log(handler, test_case["id"], e, snapshot, tb_full)
 
     result_to_write = {
         "id": test_case["id"],
