@@ -211,9 +211,9 @@ class GLMAPIHandler(OpenAICompletionsHandler):
             "temperature": self.temperature,
         }
 
-        # GLM-4.6 requires proper temperature range (0.6-1.0)
-        if self.model_name == "glm-4.6":
-            # Adjust temperature for GLM-4.6
+        # GLM models require proper temperature range (0.6-1.0)
+        if self.model_name in ["glm-4.6", "glm-4.5"]:
+            # Adjust temperature for GLM models
             adjusted_temperature = max(0.7, self.temperature)  # Ensure minimum 0.7
             kwargs["temperature"] = adjusted_temperature
 
